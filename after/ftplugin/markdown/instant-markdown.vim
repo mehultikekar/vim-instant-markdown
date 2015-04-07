@@ -48,7 +48,22 @@ function! s:killDaemon()
 endfu
 
 function! s:bufGetContents(bufnr)
-  return join(getbufline(a:bufnr, 1, "$"), "\n")
+    let lines = getbufline(a:bufnr, 1, "$")
+    let g = getpos(".")
+    let lnum = g[1] - 1
+    let char = g[2] - 1
+    let line = lines[lnum]
+    if line[char] == '' || line[char] =~ '\s'
+        let g1 = "<u>&nbsp;</u>"
+    else
+        let g1 = "<u>" . line[char] . "</u>"
+    endif
+    if char == 0
+        let lines[lnum] = g1 . line[char+1:]
+    else
+        let lines[lnum] = line[0:char-1] . g1 . line[char+1:]
+    end
+  return join(lines, "\n")
 endfu
 
 " I really, really hope there's a better way to do this.
@@ -96,8 +111,8 @@ fu! s:temperedRefresh()
         let b:changedtickLast = b:changedtick
     elseif b:changedtickLast != b:changedtick
         let b:changedtickLast = b:changedtick
-        call s:refreshView()
     endif
+    call s:refreshView()
 endfu
 
 fu! s:previewMarkdown()
